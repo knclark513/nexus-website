@@ -1,0 +1,42 @@
+name: Deploy Abacus AI Agent
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - 'src/update_agent.py'
+      - '.github/workflows/deploy-agent.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Deploy Agent to Abacus AI
+        env:
+          ABACUS_API_KEY: ${{ secrets.ABACUS_API_KEY }}
+        run: |
+          python src/update_agent.py
+
+      - name: Notify on success
+        if: success()
+        run: echo "Agent deployed successfully!"
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "Agent deployment failed!"
